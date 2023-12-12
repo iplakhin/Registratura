@@ -1,0 +1,27 @@
+version: "3.10"
+
+services:
+    db:
+        image: postgres:15
+        container_name: container_name
+        volumes: #позволяет взять файлы БД из директории локальной машины,
+            #если вдруг контейнер удалить, то при следующем билде/запуске файлы БД скопируются из прописанного здесь пути
+            - ~/.pg/pg_data/yt: /path/data
+        env_file:
+            - .env
+        
+    project_name:
+        build: # этот раздел показывает, что при каждом новом запуске образ будет билдиться из докерфайла
+            dockerfile: Dockerfile # вместо этого можно его сбилдить руками один раз и использовать готовый контейнер, 
+            context: . # чтобы не ждать билда каждый раз
+        image: my_project:latest
+        container_name: container_name
+        depends_on:
+            - db
+        volumes:
+            - static_volume: /project/static
+            - media_volume: /project/media
+        env_file:
+            - .env
+        command: >
+            bash -c "./manage.py runserver"
